@@ -66,7 +66,7 @@ func Lex(name, input string) *lexer {
 
 // isAlpha reports whether r is an alphabetic
 func isAlpha(r rune) bool {
-	return ('a' <= r && r <= 'z') || ('A' <= r && r <= 'Z')
+	return ('a' <= r && r <= 'z') || ('A' <= r && r <= 'Z') || r == '.'
 }
 
 func lexIdentifier(l *lexer) Token {
@@ -82,12 +82,17 @@ func lexIdentifier(l *lexer) Token {
 	return tok
 }
 
+func (l *lexer) appendToken(tok Token) {
+
+	l.tokens = append(l.tokens, tok)
+}
+
 func (l *lexer) nextToken() Token {
 	var tok Token
 
 	switch r := l.next(); {
 	case isAlpha(r):
-		return lexIdentifier(l)
+		tok = lexIdentifier(l)
 	case r == '(':
 		tok = newToken(LPAREN, string(r))
 	case r == ')':
@@ -95,7 +100,7 @@ func (l *lexer) nextToken() Token {
 	case r == ',':
 		tok = newToken(COMMA, string(r))
 	}
-
+	l.appendToken(tok)
 	return tok
 }
 
