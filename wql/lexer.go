@@ -16,12 +16,14 @@ type Token struct {
 
 // lexer holds the state of the scanner.
 type lexer struct {
-	name   string // used only for error reports.
-	input  string // the string being scanned.
-	start  int    // start position of this item.
-	pos    int    // current position in the input.
-	width  int    // width of last rune read from input.
-	tokens []Token
+	name  string // used only for error reports.
+	input string // the string being scanned.
+	start int    // start position of this item.
+	pos   int    // current position in the input.
+	width int    // width of last rune read from input.
+
+	parendepth int
+	tokens     []Token
 }
 
 type stateFn func(*lexer) stateFn
@@ -50,9 +52,10 @@ func (t Token) String() string {
 	case EOF:
 		return "EOF"
 	case ERROR:
-		return t.literal
+		return fmt.Sprintf("%d:%s", t.typ, t.literal)
+		//	return t.literal
 	}
-	return fmt.Sprintf("%q", t.literal)
+	return fmt.Sprintf("%d:%s", t.typ, t.literal)
 }
 
 func Lex(name, input string) *lexer {
@@ -70,15 +73,30 @@ func isAlpha(r rune) bool {
 }
 
 func lexIdentifier(l *lexer) Token {
-
 	var tok Token
 	start := (l.pos) - 1
-	for isAlpha(l.next()) {
-		// absorb
+Loop:
+	for {
+		switch r := l.next(); {
+		case isAlpha(r):
+			// absorb.
+		case r == '(':
+			l.backup()
+			literal := l.input[start:l.pos]
+			tok.literal = literal
+			switch literal {
+			case "ts":
+				tok.typ = TS
+			}
+			break Loop
+
+		default:
+			l.backup()
+			tok.typ = ERROR
+			tok.literal = l.input[start:l.pos]
+			break Loop
+		}
 	}
-	l.backup()
-	tok.typ = TS
-	tok.literal = l.input[start:l.pos]
 	return tok
 }
 
