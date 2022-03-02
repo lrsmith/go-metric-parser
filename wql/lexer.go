@@ -5,8 +5,6 @@ import (
 	"unicode/utf8"
 )
 
-// Rob Pike
-
 type TokenType int
 
 type Token struct {
