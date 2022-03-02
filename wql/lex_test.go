@@ -5,6 +5,31 @@ import (
 	"testing"
 )
 
+func TestTsExpressionWithTilda(t *testing.T) {
+	input := "ts(\"~alpha.beta.omega\")"
+	l := Lex("TestNextToken", input)
+
+	l.tokenize()
+	fmt.Println("tokens : ", l.tokens)
+}
+
+func TestTsExpressionWithWildcard(t *testing.T) {
+	input := "ts(\"alpha.*.omega\")"
+	l := Lex("TestNextToken", input)
+
+	l.tokenize()
+	fmt.Println("tokens : ", l.tokens)
+
+}
+
+func TestTsExpressionWithQuotes(t *testing.T) {
+	input := "ts(\"alpha.beta.omega\")"
+	l := Lex("TestNextToken", input)
+
+	l.tokenize()
+	fmt.Println("tokens : ", l.tokens)
+}
+
 func TestBasicTsExpressionWithQuotes(t *testing.T) {
 	input := "ts(\"alpha\")"
 	l := Lex("TestNextToken", input)
