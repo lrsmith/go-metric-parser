@@ -39,6 +39,11 @@ const (
 	IDENT
 	METRIC
 
+	// Keywords
+	AND
+	OR
+	NOT
+
 	// Delimiters
 	COMMA
 	LPAREN
@@ -55,6 +60,16 @@ var TokenTypeStr = map[TokenType]string{
 	RPAREN: "RPAREN",
 	COMMA:  "COMMA",
 	DQUOTE: "DQUOTE",
+	AND:    "AND",
+	OR:     "OR",
+	NOT:    "NOT",
+	TS:     "TS",
+}
+
+var keywords = map[string]TokenType{
+	"and": AND,
+	"or":  OR,
+	"not": NOT,
 }
 
 var functions = map[string]TokenType{
@@ -86,6 +101,10 @@ func isAlpha(r rune) bool {
 	return ('a' <= r && r <= 'z') || ('A' <= r && r <= 'Z') || r == '.' || r == '*' || r == '~'
 }
 
+func isSpace(r rune) bool {
+	return r == ' ' || r == '\t' || r == '\n' || r == '\r'
+}
+
 func (l *lexer) appendToken(tokenType TokenType, value string, pos int) {
 	// Add test to fail if illegal token is found rather then continue
 	tmpToken := newToken(tokenType, value, pos)
@@ -104,9 +123,17 @@ Loop:
 		case isAlpha(r):
 			// absorb.
 		default:
+			typ := IDENT
+
 			l.backup()
 			word := l.input[l.start:l.pos]
-			l.appendToken(IDENT, word, l.start)
+			if kw, found := keywords[word]; found {
+				typ = kw
+			} else if fn, found := functions[word]; found {
+				typ = fn
+			}
+
+			l.appendToken(typ, word, l.start)
 			break Loop
 		}
 	}
@@ -123,6 +150,8 @@ Loop:
 			l.backup()
 			//			fmt.Println(l.pos, string(l.input[l.pos]), l.width)
 			isKeywordOrIdentifier(l)
+		case isSpace(r):
+			l.start = l.pos
 		case r == '"':
 			l.appendToken(DQUOTE, string(r), l.pos-1)
 			if l.quotedepth > 0 {

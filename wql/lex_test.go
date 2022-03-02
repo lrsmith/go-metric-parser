@@ -5,6 +5,21 @@ import (
 	"testing"
 )
 
+func TestTsExpressionWithAndNot(t *testing.T) {
+	input := "ts(alpha and not omega)"
+	l := Lex("TestNextToken", input)
+
+	l.tokenize()
+	fmt.Println("tokens : ", l.tokens)
+}
+func TestTsExpressionWithAnd(t *testing.T) {
+	input := "ts(alpha and omega)"
+	l := Lex("TestNextToken", input)
+
+	l.tokenize()
+	fmt.Println("tokens : ", l.tokens)
+}
+
 func TestTsExpressionWithTilda(t *testing.T) {
 	input := "ts(\"~alpha.beta.omega\")"
 	l := Lex("TestNextToken", input)
