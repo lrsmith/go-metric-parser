@@ -5,50 +5,72 @@ import (
 	"testing"
 )
 
-func TestTsExpression(t *testing.T) {
-	input := "ts(alpha.beta.omega)"
-	tests := []struct {
-		expectedType    TokenType
-		expectedLiteral string
-	}{
-		{TS, "ts"},
-		{LPAREN, "("},
-		{TS, "alpha.beta.omega"},
-		{RPAREN, ")"},
-	}
+func TestTsExpressionWithAndNot(t *testing.T) {
+	input := "ts(alpha and not omega)"
 	l := Lex("TestNextToken", input)
 
-	for i, tt := range tests {
-		tok := l.nextToken()
-		if tok.typ != tt.expectedType {
-			t.Fatalf("tests[%d] = TokenType wrong. Expected=%q, got=%q,", i, tt.expectedType, tok.typ)
-		}
-		if tok.literal != tt.expectedLiteral {
-			t.Fatalf("tests[%d] = literal wrong. Expected=%q, got=%q,", i, tt.expectedLiteral, tok.literal)
-		}
-	}
+	l.tokenize()
+	fmt.Println("tokens : ", l.tokens)
+}
+func TestTsExpressionWithAnd(t *testing.T) {
+	input := "ts(alpha and omega)"
+	l := Lex("TestNextToken", input)
+
+	l.tokenize()
 	fmt.Println("tokens : ", l.tokens)
 }
 
-//func TestNextToken(t *testing.T) {
-//	input := "(),"
-//	tests := []struct {
-//		expectedType    TokenType
-//		expectedLiteral string
-//	}{
-//		{LPAREN, "("},
-//		{RPAREN, ")"},
-//		{COMMA, ","},
-//	}
-//	l := Lex("TestNextToken", input)
-//
-//	for i, tt := range tests {
-//		tok := l.nextToken()
-//		if tok.typ != tt.expectedType {
-//			t.Fatalf("tests[%d] = TokenType wrong. Expected=%q, got=%q,", i, tt.expectedType, tok.typ)
-//		}
-//		if tok.literal != tt.expectedLiteral {
-//			t.Fatalf("tests[%d] = literal wrong. Expected=%q, got=%q,", i, tt.expectedLiteral, tok.literal)
-//		}
-//	}
-//}
+func TestTsExpressionWithTilda(t *testing.T) {
+	input := "ts(\"~alpha.beta.omega\")"
+	l := Lex("TestNextToken", input)
+
+	l.tokenize()
+	fmt.Println("tokens : ", l.tokens)
+}
+
+func TestTsExpressionWithWildcard(t *testing.T) {
+	input := "ts(\"alpha.*.omega\")"
+	l := Lex("TestNextToken", input)
+
+	l.tokenize()
+	fmt.Println("tokens : ", l.tokens)
+
+}
+
+func TestTsExpressionWithQuotes(t *testing.T) {
+	input := "ts(\"alpha.beta.omega\")"
+	l := Lex("TestNextToken", input)
+
+	l.tokenize()
+	fmt.Println("tokens : ", l.tokens)
+}
+
+func TestBasicTsExpressionWithQuotes(t *testing.T) {
+	input := "ts(\"alpha\")"
+	l := Lex("TestNextToken", input)
+
+	l.tokenize()
+	fmt.Println("tokens : ", l.tokens)
+}
+
+func TestBasicTsExpression(t *testing.T) {
+	input := "ts(alpha)"
+	l := Lex("TestNextToken", input)
+
+	l.tokenize()
+	fmt.Println("tokens : ", l.tokens)
+}
+
+func TestNextToken(t *testing.T) {
+	input := "(),"
+	l := Lex("TestNextToken", input)
+
+	l.tokenize()
+	fmt.Println("tokens : ", l.tokens)
+	//if tok.typ != tt.expectedType {
+	//	t.Fatalf("tests[%d] = TokenType wrong. Expected=%q, got=%q,", i, tt.expectedType, tok.typ)
+	//}
+	//		if tok.literal != tt.expectedLiteral {
+	//			t.Fatalf("tests[%d] = literal wrong. Expected=%q, got=%q,", i, tt.expectedLiteral, tok.literal)
+	//		}
+}
