@@ -5,8 +5,8 @@ import (
 	"testing"
 )
 
-func TestTsExpression(t *testing.T) {
-	input := "ts(alpha.beta)"
+func TestBasicTsExpressionWithQuotes(t *testing.T) {
+	input := "ts(\"alpha\")"
 	l := Lex("TestNextToken", input)
 
 	l.tokenize()

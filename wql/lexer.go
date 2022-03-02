@@ -24,10 +24,10 @@ type lexer struct {
 	width int    // width of last rune read from input.
 
 	parendepth int
-	tokens     []Token
-}
+	quotedepth int
 
-type stateFn func(*lexer) stateFn
+	tokens []Token
+}
 
 const eof = -1
 const (
@@ -43,11 +43,10 @@ const (
 	COMMA
 	LPAREN
 	RPAREN
+	DQUOTE
 
 	// Functions
-	FUNC_BEG
 	TS
-	FUNC_END
 )
 
 var TokenTypeStr = map[TokenType]string{
@@ -55,6 +54,7 @@ var TokenTypeStr = map[TokenType]string{
 	LPAREN: "LPAREN",
 	RPAREN: "RPAREN",
 	COMMA:  "COMMA",
+	DQUOTE: "DQUOTE",
 }
 
 var functions = map[string]TokenType{
@@ -123,6 +123,13 @@ Loop:
 			l.backup()
 			//			fmt.Println(l.pos, string(l.input[l.pos]), l.width)
 			isKeywordOrIdentifier(l)
+		case r == '"':
+			l.appendToken(DQUOTE, string(r), l.pos-1)
+			if l.quotedepth > 0 {
+				l.quotedepth--
+			} else {
+				l.quotedepth++
+			}
 		case r == '(':
 			l.appendToken(LPAREN, string(r), l.pos-1)
 			l.parendepth++
