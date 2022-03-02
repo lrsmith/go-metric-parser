@@ -5,6 +5,22 @@ import (
 	"testing"
 )
 
+func TestTsExpressionWithTag(t *testing.T) {
+	input := "ts(alpha, tag=mytag)"
+	l := Lex("TestNextToken", input)
+
+	l.tokenize()
+	fmt.Println("tokens : ", l.tokens)
+}
+
+func TestTsExpressionWithSourcet(t *testing.T) {
+	input := "ts(alpha, source=mysource)"
+	l := Lex("TestNextToken", input)
+
+	l.tokenize()
+	fmt.Println("tokens : ", l.tokens)
+}
+
 func TestTsExpressionWithAndNot(t *testing.T) {
 	input := "ts(alpha and not omega)"
 	l := Lex("TestNextToken", input)

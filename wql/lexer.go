@@ -37,39 +37,49 @@ const (
 
 	//Identifiers and Literals
 	IDENT
+	LITERAL
 	METRIC
 
 	// Keywords
 	AND
 	OR
 	NOT
+	SOURCE
+	TAG
 
 	// Delimiters
 	COMMA
 	LPAREN
 	RPAREN
 	DQUOTE
+	EQUAL
 
 	// Functions
 	TS
 )
 
 var TokenTypeStr = map[TokenType]string{
-	IDENT:  "IDENT",
-	LPAREN: "LPAREN",
-	RPAREN: "RPAREN",
-	COMMA:  "COMMA",
-	DQUOTE: "DQUOTE",
-	AND:    "AND",
-	OR:     "OR",
-	NOT:    "NOT",
-	TS:     "TS",
+	IDENT:   "IDENT",
+	LITERAL: "LITERAL",
+	LPAREN:  "LPAREN",
+	RPAREN:  "RPAREN",
+	COMMA:   "COMMA",
+	DQUOTE:  "DQUOTE",
+	AND:     "AND",
+	OR:      "OR",
+	NOT:     "NOT",
+	EQUAL:   "EQUAL",
+	SOURCE:  "SOURCE",
+	TAG:     "TAG",
+	TS:      "TS",
 }
 
 var keywords = map[string]TokenType{
-	"and": AND,
-	"or":  OR,
-	"not": NOT,
+	"and":    AND,
+	"or":     OR,
+	"not":    NOT,
+	"source": SOURCE,
+	"tag":    TAG,
 }
 
 var functions = map[string]TokenType{
@@ -81,7 +91,8 @@ func (t Token) String() string {
 	case EOF:
 		return "EOF"
 	case ERROR:
-		return fmt.Sprintf("%d:%s", t.typ, t.literal)
+		return fmt.Sprintf("%d:%s:%s", t.pos, TokenTypeStr[t.typ], t.literal)
+		//	return fmt.Sprintf("%d:%s", t.typ, t.literal)
 		//	return t.literal
 	}
 	return fmt.Sprintf("%d:%s:%s", t.pos, TokenTypeStr[t.typ], t.literal)
@@ -123,7 +134,7 @@ Loop:
 		case isAlpha(r):
 			// absorb.
 		default:
-			typ := IDENT
+			typ := LITERAL
 
 			l.backup()
 			word := l.input[l.start:l.pos]
@@ -152,6 +163,8 @@ Loop:
 			isKeywordOrIdentifier(l)
 		case isSpace(r):
 			l.start = l.pos
+		case r == '=':
+			l.appendToken(EQUAL, string(r), l.pos-1)
 		case r == '"':
 			l.appendToken(DQUOTE, string(r), l.pos-1)
 			if l.quotedepth > 0 {
