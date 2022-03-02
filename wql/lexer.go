@@ -12,6 +12,7 @@ type TokenType int
 type Token struct {
 	typ     TokenType
 	literal string
+	pos     int
 }
 
 // lexer holds the state of the scanner.
@@ -43,9 +44,22 @@ const (
 	LPAREN
 	RPAREN
 
-	//KeyWords
+	// Functions
+	FUNC_BEG
 	TS
+	FUNC_END
 )
+
+var TokenTypeStr = map[TokenType]string{
+	IDENT:  "IDENT",
+	LPAREN: "LPAREN",
+	RPAREN: "RPAREN",
+	COMMA:  "COMMA",
+}
+
+var functions = map[string]TokenType{
+	"ts": TS,
+}
 
 func (t Token) String() string {
 	switch t.typ {
@@ -55,7 +69,7 @@ func (t Token) String() string {
 		return fmt.Sprintf("%d:%s", t.typ, t.literal)
 		//	return t.literal
 	}
-	return fmt.Sprintf("%d:%s", t.typ, t.literal)
+	return fmt.Sprintf("%d:%s:%s", t.pos, TokenTypeStr[t.typ], t.literal)
 }
 
 func Lex(name, input string) *lexer {
@@ -67,63 +81,65 @@ func Lex(name, input string) *lexer {
 	return l
 }
 
-// isAlpha reports whether r is an alphabetic
+//Valid characters are: a-z, A-Z, 0-9, hyphen ("-"), underscore ("_"), dot (".").
 func isAlpha(r rune) bool {
-	return ('a' <= r && r <= 'z') || ('A' <= r && r <= 'Z') || r == '.'
+	return ('a' <= r && r <= 'z') || ('A' <= r && r <= 'Z')
 }
 
-func lexIdentifier(l *lexer) Token {
-	var tok Token
-	start := (l.pos) - 1
+func (l *lexer) appendToken(tokenType TokenType, value string, pos int) {
+	// Add test to fail if illegal token is found rather then continue
+	tmpToken := newToken(tokenType, value, pos)
+	//fmt.Println("Appending : ", l.start, pos)
+	l.start = pos + 1
+	l.tokens = append(l.tokens, tmpToken)
+}
+
+func isKeywordOrIdentifier(l *lexer) {
 Loop:
 	for {
+		//if l.pos < len(l.input) {
+		//	fmt.Println("2 :", l.pos, string(l.input[l.pos]), l.width)
+		//}
 		switch r := l.next(); {
 		case isAlpha(r):
 			// absorb.
-		case r == '(':
-			l.backup()
-			literal := l.input[start:l.pos]
-			tok.literal = literal
-			switch literal {
-			case "ts":
-				tok.typ = TS
-			}
-			break Loop
-
 		default:
 			l.backup()
-			tok.typ = ERROR
-			tok.literal = l.input[start:l.pos]
+			word := l.input[l.start:l.pos]
+			l.appendToken(IDENT, word, l.start)
 			break Loop
 		}
 	}
-	return tok
 }
 
-func (l *lexer) appendToken(tok Token) {
+func (l *lexer) tokenize() {
+Loop:
+	for {
+		//if l.pos < len(l.input) {
+		//	fmt.Println("1 :", l.pos, string(l.input[l.pos]), l.width)
+		//}
+		switch r := l.next(); {
+		case isAlpha(r):
+			l.backup()
+			//			fmt.Println(l.pos, string(l.input[l.pos]), l.width)
+			isKeywordOrIdentifier(l)
+		case r == '(':
+			l.appendToken(LPAREN, string(r), l.pos-1)
+			l.parendepth++
+		case r == ')':
+			l.appendToken(RPAREN, string(r), l.pos-1)
+			l.parendepth--
+		case r == ',':
+			l.appendToken(COMMA, string(r), l.pos-1)
+		default:
+			break Loop
+		}
 
-	l.tokens = append(l.tokens, tok)
-}
-
-func (l *lexer) nextToken() Token {
-	var tok Token
-
-	switch r := l.next(); {
-	case isAlpha(r):
-		tok = lexIdentifier(l)
-	case r == '(':
-		tok = newToken(LPAREN, string(r))
-	case r == ')':
-		tok = newToken(RPAREN, string(r))
-	case r == ',':
-		tok = newToken(COMMA, string(r))
 	}
-	l.appendToken(tok)
-	return tok
 }
 
-func newToken(tokenType TokenType, value string) Token {
-	return Token{typ: tokenType, literal: value}
+func newToken(tokenType TokenType, value string, pos int) Token {
+	return Token{typ: tokenType, literal: value, pos: pos}
 }
 
 // backup steps back one rune. Can only be called once per call of next.
@@ -141,23 +157,4 @@ func (l *lexer) next() rune {
 	l.width = w
 	l.pos += l.width
 	return r
-}
-
-func lexState(l *lexer) stateFn {
-
-	switch r := l.next(); {
-	case r == eof:
-		return nil
-	default:
-		fmt.Println(string(r))
-		return lexState
-	}
-
-	return nil
-}
-
-func (l *lexer) run() {
-	for state := lexState; state != nil; {
-		state = state(l)
-	}
 }
