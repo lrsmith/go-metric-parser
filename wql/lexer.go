@@ -107,7 +107,14 @@ func Lex(name, input string) *lexer {
 
 //Valid characters are: a-z, A-Z, 0-9, hyphen ("-"), underscore ("_"), dot (".").
 func isAlpha(r rune) bool {
-	return ('a' <= r && r <= 'z') || ('A' <= r && r <= 'Z') || r == '.' || r == '*' || r == '~'
+	return ('a' <= r && r <= 'z') ||
+		('A' <= r && r <= 'Z') ||
+		r == '.' ||
+		r == '*' ||
+		r == '~' ||
+		r == '_' ||
+		r == '-' ||
+		(r >= '0' && r <= '9')
 }
 
 func isSpace(r rune) bool {
