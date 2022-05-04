@@ -13,6 +13,22 @@ func TestTsExpressionWithTag(t *testing.T) {
 	fmt.Println("tokens : ", l.tokens)
 }
 
+func TestTsExpressionUnderscore(t *testing.T) {
+	input := "(ts(\"zookeeper.zk_open_file_descriptor_count.gauge\", source=\"on58-hi.aue1t.internal\")"
+	l := Lex("TestNextToken", input)
+
+	l.tokenize()
+	fmt.Println("tokens : ", l.tokens)
+}
+
+func TestTsExpressionWildUnder(t *testing.T) {
+	input := "ts(\"interface.*.if_packets.rx\" ,source=\"monapp03b.aue1d.internal\")"
+	l := Lex("TestNextToken", input)
+
+	l.tokenize()
+	fmt.Println("tokens : ", l.tokens)
+}
+
 func TestTsExpressionWithSourcet(t *testing.T) {
 	input := "ts(alpha, source=mysource)"
 	l := Lex("TestNextToken", input)
